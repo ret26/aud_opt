@@ -1,0 +1,31 @@
+function [ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts)
+
+ynew = yinit;
+
+numIts = ones(6,1)*40;
+I = length(numIts);
+obj = [];
+it = [];
+err_y = [];
+
+for it = 1:I
+  disp([num2str(it),'/',num2str(I)])
+  
+  tic;
+  [ynew, objCur, itCur] = minimize(ynew,'getObjV1',numIts(it), ...
+				   ATar,g_gam,DS,fCutLP,ordLP,rho);
+
+  obj = [obj;objCur];
+  it = [it;itCur];
+  timCur = toc;
+  disp(['objective ',num2str(objCur(end)),'   time ',num2str(timCur),'s'])
+  
+  err_y_cur = mean((ynew-y).^2);
+  err_y = [err_y,err_y_cur];
+  
+  disp(['error y  ',num2str(err_y(end)),'   time ',num2str(timCur),'s'])
+ 
+end
+
+info.err_y = erry;
+info.obj = obj;

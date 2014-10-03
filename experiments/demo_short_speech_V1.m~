@@ -1,0 +1,82 @@
+clear; 
+
+% load sound
+[y,fs] = wavread('/home/rich/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
+
+% pick a short section
+y = y(8438:12190);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set
+DS=1; % downsampling (optional)
+channels_per_erb=0.5;
+filterlength = 5000; % not sure whether this is useful -- try optimising later
+
+T=length(y);
+% Number of channels, slightly less than 1 ERB(Cambridge) per channel.
+D=ceil(freqtoerb(fs/2)*channels_per_erb);
+% Compute center frequencies.
+fc=erbspace(0,fs/2,D);
+
+% choose gammatone filter coefficients
+g_gam=gammatonefir(fc,fs,filterlength,'peakphase');
+
+% hair cell
+% (soft) half wave rectify
+rho = 1e4;
+fCutLP = 770*2/fs;
+ordLP = 7;
+
+[ATar,YHWTar,YTar] = aud_mod_V1(y,g_gam,DS,fCutLP,ordLP,rho);
+%imagesc(log(ATar-min(ATar(:))+1))
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+yinit = randn(T,1)/1000;
+ynew = yinit;
+
+numIts = ones(5,1)*10;
+I = length(numIts);
+obj = [];
+it = [];
+
+for it = 1:I
+  disp([num2str(it),'/',num2str(I)])
+  
+  tic;
+  [ynew, objCur, itCur] = minimize(ynew,'getObjV1',numIts(it), ...
+				   ATar,g_gam,DS,fCutLP,ordLP,rho);
+
+  obj = [obj;objCur];
+  it = [it;itCur];
+  timCur = toc;
+  disp(['objective ',num2str(objCur(end)),'   time ',num2str(timCur),'s'])
+end
+
+[A,YHW,Y] = aud_mod_V1(ynew,g_gam,DS,fCutLP,ordLP,rho);
+
+figure
+plot(obj)
+set(gca,'yscale','log')
+
+figure
+subplot(2,1,1)
+
+tol = 1e-5;
+ATarPlot = ATar;
+ATarPlot(ATar<tol) = tol;
+surf(log(ATarPlot)','edgecolor','none')
+view(0,90)
+set(gca,'xlim',[1,T],'ylim',[1,D])
+
+subplot(2,1,2)
+APlot = A;
+APlot(A<tol) = tol;
+surf(log(APlot)','edgecolor','none')
+view(0,90)
+set(gca,'xlim',[1,T],'ylim',[1,D])
+
+
+figure
+hold on
+plot(y,'-k')
+plot(ynew,'-r')
