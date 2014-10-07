@@ -1,4 +1,5 @@
 clear; 
+randn('state',1);
 
 % alter the number of bands and measure the error w.r.t. y
 
@@ -18,7 +19,14 @@ T=length(y);
 
 DS=1; % downsampling (optional)
 
-Ds = [1,3,6,9];
+Ds = [3,6,9];
+bet = [3,1,1];
+
+%fmin = 100;
+%fmax = 6000;
+
+fmin = 200;
+fmax = 5500;
 
 % hair cell
 % (soft) half wave rectify
@@ -28,11 +36,20 @@ ordLP = 7;
 filterlength = 5000; % not sure whether this is useful -- try optimising later
 
 % numbers of iterations and restarts
-numIts = ones(15,1)*40;
-L = 5; % number of random restarts
-Ys = zeros(T,L,M);
-err_ys = zeros(length(numIts,L,M);
+numIts = ones(40,1)*40;
+L = 1; % number of random restarts
 
+M = length(Ds); % number of different numbers of channels to use
+
+Ys = zeros(T,L,M);
+Ysvoc = zeros(T,L,M);
+err_ys = zeros(length(numIts),L,M);
+
+snr_y = zeros(L,M);
+snr_A = zeros(L,M);
+snr_yvoc = zeros(L,M);
+snr_Avoc  = zeros(L,M);
+snr_Atrain = zeros(L,M);
 
 for m=1:M
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,7 +59,7 @@ for m=1:M
   D = Ds(m); %=ceil(freqtoerb(fmax)*channels_per_erb(m));
   
   % Compute center frequencies.
-  fc=erbspace(50,fmax,D);
+  fc=erbspace(fmin,fmax,D);
   betas = bet(m)*ones(1,D); % optional widening of the filters 
   
   % choose gammatone filter coefficients
@@ -50,41 +67,15 @@ for m=1:M
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % plot filter bank
-  bw = audfiltbw(fc).*betas;
-  freqs = linspace(0,fs/2,T/2);
-  spec = gammatone_spectrum(fc,bw,freqs);
+  %hFig = plotFB(fc,betas,g_gam,fs,T,DS);
   
-  yspec = zeros(T,1);
-  yspec(floor(T/2)) = 1;
-  Yspec = ufilterbank(yspec,g_gam,DS);
-  Yspec = real(Yspec);
-  specY = abs(fft(Yspec));
-  freqs = linspace(0,fs/2,floor(T/2));
-  
-  figure
-  subplot(2,1,1)
-  hold on
-  for d=1:D
-    plot(freqs,specY(1:floor(T/2),d),'-r','linewidth',2)
-  plot(freqs,spec(:,d),'-k')
-  end
-  
-  subplot(2,1,2)
-  hold on
-  for d=1:D
-    plot(freqs,specY(1:floor(T/2),d),'-k','linewidth',2)
-    plot(freqs,spec(:,d),'-k')
-  end
-  
-  set(gca,'xscale','log','xlim',[10,fs/2]);
-
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  keyboard
+  %keyboard
 
   [ATar,YHWTar,YTar] = aud_mod_V1(y,g_gam,DS,fCutLP,ordLP,rho);
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+  
   for l=1:L
     disp(['%%%%%% Progress ',num2str(l),'/',num2str(L),' %%%%%%'])
     
@@ -98,93 +89,35 @@ for m=1:M
     objs{l,m} = info.obj;
     err_ys(:,l,m) = info.err_y;
     
+    yvoc = noise_vocode(ATar,g_gam,DS,fCutLP,ordLP,rho);
+    Ysvoc(:,l,m) = yvoc;
+
+    info.obj(end)
+    
+    % various metrics
+    
+    [A,YHW,Y] = aud_mod_V1(ynew,g_gam,DS,fCutLP,ordLP,rho);
+    snr_Atraincur = snr(ATar,A);
+    snr_Atrain(l,m) = mean(snr_Atraincur);
+    
+    [snr_y(l,m),snr_Acur] = compute_sig_sim(y,ynew,fs);
+    snr_A(l,m) = mean(snr_Acur);
+    
+    [snr_yvoc(l,m),snr_Avoccur] = compute_sig_sim(y,yvoc,fs);
+    snr_Avoc(l,m) =  mean(snr_Avoccur);
+    
+    disp('snr y')
+    round(snr_y*10)/10
+    
+    disp('snr A (all)')
+    round(snr_A*10)/10
+    
+    disp('snr A (target)')
+    round(snr_Atrain*10)/10
+    
   end
 end
 
-% [A,YHW,Y] = aud_mod_V1(ynew,g_gam,DS,fCutLP,ordLP,rho);
-figure
-subplot(1,2,1)
-hold on
-ylabel('objective')
-
-for l=1:L
-  plot(objs1{l},'-k')
-  plot(objs2{l},'-r')
-end
-
-set(gca,'yscale','log')
-legend('condition 1','condition 2')
-
-subplot(1,2,2)
-hold on
-
-for l=1:L
-  plot(err_ys1{l},'-k')
-  plot(err_ys2{l},'-r')
-end
-ylabel('error y')
-set(gca,'yscale','log')
-
-
-
-
-%K = 20;
-
-% figure
-% subplot(2,1,1)
-
-% tol = 1e-5;
-% ATarPlot = ATar;
-% ATarPlot(ATar<tol) = tol;
-% surf(log(ATarPlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
-
-% subplot(2,1,2)
-% APlot = A;
-% APlot(A<tol) = tol;
-% surf(log(APlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
-
-
-figure
-subplot(2,1,1)
-hold on
-plot(y,'-k')
-
-for l=1:L
-  plot(Ys1{l},'-r')
-end
-
-subplot(2,1,2)
-hold on
-plot(y,'-k')
-
-for l=1:L
-  plot(Ys1{l},'-r')
-end
-
-mn_err_y1 = 0;
-mn_err_y2 = 0;
-mn_objs1 = 0;
-mn_objs2 = 0;
-
-for l=1:L
-  mn_err_y1 = mn_err_y1+1/L*err_ys1{1}(end);
-  mn_err_y2 = mn_err_y2+1/L*err_ys2{1}(end);
-  mn_objs1 = mn_objs1+1/L*objs1{1}(end);
-  mn_objs2 = mn_objs2+1/L*objs2{1}(end); 
-end
-
-disp('mean objectives reached')
-[mn_objs1,mn_objs2]
-
-disp('mean squared discrepancy from true signal')
-[mn_err_y1, mn_err_y2]
-
-disp('variance in resulting solutions')
-[mean(var(Ys1')),mean(var(Ys2'))]
 
 %yscale = max(abs([y;ynew;yvoc]));
 %savefile = '/home/rich/Synchronised/aud_opt/sounds/';
