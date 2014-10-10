@@ -17,6 +17,8 @@ function [ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,nu
 % optional arguments:
 % verbose = flag to indicate whether to display information about
 %    the optimisation
+% kappa = optional prior on y (penalises squared error of y)
+% cost = 'log' or 'linear'
 
 % OUTPUTS
 % ynew = optimised signal
@@ -34,20 +36,46 @@ if nargin>9
 else
   verbose = 1;
 end
-  
+
+if nargin>10
+  kappa = varargin{2};
+else
+  kappa = 0;
+end
+
+if nargin>11
+  cost = varargin{3};
+else
+  cost = 'linear';
+end
+
+
 for it = 1:I
 
   if verbose==1
     disp([num2str(it),'/',num2str(I)])
   end
   
+  itSet.length = numIts(it);
+  itSet.method = 'CG';
+%  itSet.mem = 500;
+  
   tic;
-  [ynew, objCur, itCur] = minimize(ynew,'getObjV1',numIts(it), ...
-				   ATar,g_gam,DS,fCutLP,ordLP,rho);
-
+  if strcmp(cost,'linear')
+    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV2',itSet, ...
+					 ATar,g_gam,DS,fCutLP,ordLP,rho,kappa);
+  elseif strcmp(cost,'log')
+    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV3',itSet, ...
+					 ATar,g_gam,DS,fCutLP,ordLP,rho,kappa);
+  else
+    disp('unknown cost function')
+    return;
+  end
+  timCur = toc;
+    
   obj = [obj;objCur];
   it = [it;itCur];
-  timCur = toc;
+
   
   err_y_cur = mean((ynew-y).^2);
   err_y = [err_y,err_y_cur];

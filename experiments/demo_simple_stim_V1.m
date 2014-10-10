@@ -2,15 +2,14 @@ clear;
 
 randn('state',1);
 
-% load sound
-[y,fs] = wavread('/home/rich/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
+% design waveform
+fs = 16000;
+T = 1*fs/4;
 
-% pick a short section
-% y = y(8438:12190);
-% y = y(8438+3887:8640+8438);
-
-% pick a long section
- y = y(8438:33630);
+% simple sinusoid
+freq = 2000;
+y = sin(2*pi*freq*(1:T)/fs)';
+stim_name = ['sin_freq_',num2str(freq)];
 
 % normalise
 y = y/sqrt(var(y));
@@ -24,10 +23,10 @@ T=length(y);
 
 %channels_per_erb = 0.2; D=ceil(freqtoerb(fs/2)*channels_per_erb); %fc=erbspace(50,fs/2-1000,D);
 
-%D = 20;   fc=erbspace(200,5500,D); bet = 1;
+%D = 20;   fc=erbspace(200,5500,D);  bet = 1;
 %D = 10;   fc=erbspace(200,5500,D); bet = 1;
-D = 3;   fc=erbspace(200,5500,D); bet = 3;
-%D = 4;   fc=erbspace(200,5500,D); bet = 2;
+%D = 3;   fc=erbspace(200,5500,D); bet = 3;
+D = 4;   fc=erbspace(200,5500,D); bet = 2;
 %D = 5;   fc=erbspace(200,5500,D); bet = 2;
 
 %D = 3; fc = [100,500,4000]; bet = 3;
@@ -59,11 +58,11 @@ ordLP = 7;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % optimise new signal
 
-yInit = randn(T,1)/100;
-numIts = ones(10,1)*40;
+yInit = 1e-20*randn(T,1);
+numIts = ones(10,1)*160;
 %numIts = ones(40,1)*40;
 
-[ynew,info] = match_envelopes_V1(yInit,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y);
+[ynew,info] = match_envelopes_V1(yInit,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y,1,0);
 
 [A,YHW,Y] = aud_mod_V1(ynew,g_gam,DS,fCutLP,ordLP,rho);
 
@@ -191,12 +190,28 @@ spec_disc = abs(fft(disc));
 spec_y = abs(fft(y));
 spec_ynew = abs(fft(ynew));
 
+
+yspec = zeros(T,1);
+yspec(floor(T/2)) = 1;
+Yspec = ufilterbank(yspec,g_gam,DS);
+Yspec = real(Yspec);
+specY = abs(fft(Yspec));
+freqs = linspace(0,fs/2,floor(T/2));
+for d=1:D
+  plot(freqs,specY(1:floor(T/2),d),'-','linewidth',2,'color',[1,1,1]*0.8)
+end
+
+scale = max([spec_y;spec_ynew]);
+
 freq = linspace(0,fs/2,floor(T/2));
-plot(freq,spec_y(1:floor(T/2)),'-k')
-plot(freq,spec_ynew(1:floor(T/2)),'-r')
-plot(freq,spec_disc(1:floor(T/2)))
+plot(freq,spec_y(1:floor(T/2))/scale,'-k')
+plot(freq,spec_ynew(1:floor(T/2))/scale,'-r')
+plot(freq,spec_disc(1:floor(T/2))/scale)
 ylabel('spectrum')
 xlabel('frequency')
+
+
+
 
 figure
 hold on
@@ -218,8 +233,8 @@ legend('original','optimised')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds
 yscale = max(abs([y;ynew;yvoc1;yvoc2;yvoc3]));
-savefile = '/home/rich/Data/aud_opt/demo_short_speech_V1/';
-savebasename = ['sentence_bet_',num2str(bet),'_D_',num2str(D),'_']
+savefile = '/home/rich/Data/aud_opt/simple_stim_V1/';
+savebasename = [stim_name,'_bet_',num2str(bet),'_D_',num2str(D),'_']
 wavwrite(0.95*y/yscale,fs,[savefile,savebasename,'original.wav'])
 wavwrite(0.95*ynew/yscale,fs,[savefile,savebasename,'chimera1.wav'])
 wavwrite(0.95*yvoc1/yscale,fs,[savefile,savebasename,'chimera2.wav'])

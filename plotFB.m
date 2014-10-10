@@ -20,11 +20,11 @@ for d=1:D
   plot(freqs,spec(:,d),'-k')
 end
 
-  subplot(2,1,2)
-  hold on
-  for d=1:D
-    plot(freqs,specY(1:floor(T/2),d),'-k','linewidth',2)
-    plot(freqs,spec(:,d),'-k')
-  end
-  
-  set(gca,'xscale','log','xlim',[10,fs/2]);
+subplot(2,1,2)
+hold on
+for d=1:D
+  plot(freqs,specY(1:floor(T/2),d),'-k','linewidth',2)
+  plot(freqs,spec(:,d),'-k')
+end
+
+set(gca,'xscale','log','xlim',[10,fs/2]);
