@@ -1,15 +1,13 @@
-function [ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y,varargin)
+function [ynew,info] = match_HWR_filt_V1(ynew,YHWTar,g_gam,DS,rho,numIts,y,varargin)
 
-% function [ynew,info] =
-% match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y,varargin)
-
+% function [ynew,info] = match_HWR_filt_V1(ynew,YHWTar,g_gam,DS,rho,numIts,y,varargin)
+%
+%
 % INPUTS
 % ynew = initialisation for new signal [T,1]
-% ATar = target envelopes [T,D]
+% YHWTar = target half wave rectified filter coefficient [T,D]
 % g_gam = gammatone filter coefficients produced from gammatonefir []
 % DS = down sampling option, not currently implemented
-% fCutLP = low pass filter cutoff for AN model
-% ordLP = order of the butterworth implementation
 % rho = strength of the soft-threshold-linear function, log(1+exp(rho*x))/rho
 % numIts = number of iterations [L,1]
 % y = signal approximating (only required to give back information
@@ -17,9 +15,6 @@ function [ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,nu
 % optional arguments:
 % verbose = flag to indicate whether to display information about
 %    the optimisation
-% kappa = optional prior on y (penalises squared error of y)
-% cost = 'log' or 'linear' 
-% beta = optional term to encourage ynew to be different from y
 
 % OUTPUTS
 % ynew = optimised signal
@@ -38,24 +33,6 @@ else
   verbose = 1;
 end
 
-if nargin>10
-  kappa = varargin{2};
-else
-  kappa = 0;
-end
-
-if nargin>11
-  cost = varargin{3};
-else
-  cost = 'linear';
-end
-
-if nargin>12
-  beta = varargin{4};
-else
-  beta = 0;
-end
-
 
 for it = 1:I
 
@@ -68,21 +45,10 @@ for it = 1:I
 %  itSet.mem = 500;
 
 tic;
-  if strcmp(cost,'linear')&beta==0
-    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV2',itSet, ...
-					 ATar,g_gam,DS,fCutLP, ...
-					 ordLP,rho,kappa); 
-  elseif strcmp(cost,'log')
-    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV3',itSet, ...
-					 ATar,g_gam,DS,fCutLP,ordLP,rho,kappa);
-  elseif strcmp(cost,'linear')&beta~=0
-    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV4',itSet, ...
-					 ATar,g_gam,DS,fCutLP,ordLP,rho,kappa,beta,y);
-  else
-    disp('unknown cost function')
-    return;
-  end
-  timCur = toc;
+
+    [ynew, objCur, itCur] = minimize_new(ynew,'getObjV5',itSet, ...
+					 YHWTar,g_gam,DS,rho); 
+    timCur = toc;
     
   obj = [obj;objCur];
   it = [it;itCur];
