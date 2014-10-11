@@ -7,7 +7,7 @@ clear;
 % pat = genpath('~/Synchronised/'); addpath(pat);
 
 % load sound
-[y,fs] = wavread('/home/rich/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
+[y,fs] = wavread('~/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
 
 % pick a short section
 % y = y(8438:12190);
@@ -54,9 +54,9 @@ ordLP = 7;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-numIts = ones(30,1)*40;
+numIts = ones(10,1)*120;
 
-L = 10; % number of random restarts
+L = 5; % number of random restarts
 
 Ys1 = zeros(T,L);
 Ys2 = zeros(T,L);
@@ -64,8 +64,8 @@ Ys2 = zeros(T,L);
 for l=1:L
   disp(['%%%%%% Progress ',num2str(l),'/',num2str(L),' %%%%%%'])
   
-  yInit1 = randn(T,1);
-  yInit2 = yInit1/100;%randn(T,1)/100;
+  yInit1 = randn(T,1)/100;
+  yInit2 = yInit1*1e-5;%randn(T,1)/100;
 
 
   [ynew1,info1] = match_envelopes_V1(yInit1,ATar,g_gam,DS,fCutLP, ...
