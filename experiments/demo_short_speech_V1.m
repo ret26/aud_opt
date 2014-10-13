@@ -3,7 +3,7 @@ clear;
 randn('state',1);
 
 % load sound
-[y,fs] = wavread('/home/rich/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
+[y,fs] = wavread('~/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
 
 % pick a short section
 % y = y(8438:12190);
@@ -26,9 +26,14 @@ T=length(y);
 
 %D = 20;   fc=erbspace(200,5500,D); bet = 1;
 %D = 10;   fc=erbspace(200,5500,D); bet = 1;
-D = 3;   fc=erbspace(200,5500,D); bet = 3;
-%D = 4;   fc=erbspace(200,5500,D); bet = 2;
+
 %D = 5;   fc=erbspace(200,5500,D); bet = 2;
+%D = 4;   fc=erbspace(200,5500,D); bet = 2;
+
+% D = 3;   fc=erbspace(200,5500,D); bet = 3;
+D = 2;   fc=erbspace(200,5500,D); bet = 3;
+
+
 
 %D = 3; fc = [100,500,4000]; bet = 3;
 %D = 2; fc = [200,800]; bet = 5;
@@ -59,7 +64,7 @@ ordLP = 7;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % optimise new signal
 
-yInit = randn(T,1)/100;
+yInit = 0*randn(T,1)/100;
 numIts = ones(10,1)*40;
 %numIts = ones(40,1)*40;
 
@@ -218,10 +223,11 @@ legend('original','optimised')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds
 yscale = max(abs([y;ynew;yvoc1;yvoc2;yvoc3]));
-savefile = '/home/rich/Data/aud_opt/demo_short_speech_V1/';
+savefile = '~/data/aud_opt/demo_short_speech_V1/';
 savebasename = ['sentence_bet_',num2str(bet),'_D_',num2str(D),'_']
-wavwrite(0.95*y/yscale,fs,[savefile,savebasename,'original.wav'])
-wavwrite(0.95*ynew/yscale,fs,[savefile,savebasename,'chimera1.wav'])
-wavwrite(0.95*yvoc1/yscale,fs,[savefile,savebasename,'chimera2.wav'])
-wavwrite(0.95*yvoc2/yscale,fs,[savefile,savebasename,'chimera3.wav'])
-wavwrite(0.95*yvoc3/yscale,fs,[savefile,savebasename,'chimera4.wav'])
+wavwrite(0.95*y/yscale,fs,[savefile,'sounds/',savebasename,'original.wav'])
+wavwrite(0.95*ynew/yscale,fs,[savefile,'sounds/',savebasename,'chimera1.wav'])
+wavwrite(0.95*yvoc1/yscale,fs,[savefile,'sounds/',savebasename,'chimera2.wav'])
+wavwrite(0.95*yvoc2/yscale,fs,[savefile,'sounds/',savebasename,'chimera3.wav'])
+wavwrite(0.95*yvoc3/yscale,fs,[savefile,'sounds/',savebasename,'chimera4.wav'])
+save([savefile,savebasename,'data.mat'])

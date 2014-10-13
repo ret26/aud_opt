@@ -3,7 +3,7 @@ clear;
 randn('state',1);
 
 % load sound
-[y,fs] = wavread('/home/rich/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
+[y,fs] = wavread('~/Music/Various Artists/Best Ever Sound Effects - Vol.3 - Sounds Of Nature Sound Effects/74 - Sentences.wav');
 
 % pick a short section
 % y = y(8438:12190);
@@ -67,7 +67,7 @@ yInit = randn(T,1)*0;
 numIts = ones(40,1)*160;
 %numIts = ones(40,1)*40;
 
-[ynew,info] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numIts,y);
+[ynew,info] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numIts,y,fCutLP,ordLP,ATar);
 %[ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y);
 
 [A,YHW,Y] = aud_mod_V1(ynew,g_gam,DS,fCutLP,ordLP,rho);
@@ -223,7 +223,7 @@ legend('original','optimised')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds
 yscale = max(abs([y;ynew;yvoc1;yvoc2;yvoc3]));
-savefile = '/home/rich/Data/aud_opt/demo_short_speech_V2/';
+savefile = '~/data/aud_opt/demo_short_speech_V2/';
 savebasename = ['sentence_bet_',num2str(bet),'_D_',num2str(D),'_']
 wavwrite(0.95*y/yscale,fs,[savefile,savebasename,'original.wav'])
 wavwrite(0.95*ynew/yscale,fs,[savefile,savebasename,'chimera1.wav'])
