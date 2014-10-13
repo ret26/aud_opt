@@ -157,78 +157,17 @@ objyvoc1 = mean((y-yvoc1).^2);
 objyvoc2 = mean((y-yvoc2).^2);
 objyvoc3 = mean((y-yvoc3).^2);
 objynoi = mean((y-randn(T,1)).^2);
-%plot(length(info.err_y),objyvoc,'ok')
-%plot(length(info.err_y),objynoi,'or')
-
-% K = 20;
-% figure
-% subplot(2,1,1)
-% tol = 1e-5;
-% ATarPlot = ATar;
-% ATarPlot(ATar<tol) = tol;
-% surf(log(ATarPlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
-
-% subplot(2,1,2)
-% APlot = A;
-% APlot(A<tol) = tol;
-% surf(log(APlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
-
-figure
-hold on
-plot(snr_A)
-xlabel('channel number')
-ylabel('SNR envelopes')
-
-figure
-hold on
-disc = y - ynew;
-spec_disc = abs(fft(disc));
-spec_y = abs(fft(y));
-spec_ynew = abs(fft(ynew));
 
 
-yspec = zeros(T,1);
-yspec(floor(T/2)) = 1;
-Yspec = ufilterbank(yspec,g_gam,DS);
-Yspec = real(Yspec);
-specY = abs(fft(Yspec));
-freqs = linspace(0,fs/2,floor(T/2));
-for d=1:D
-  plot(freqs,specY(1:floor(T/2),d),'-','linewidth',2,'color',[1,1,1]*0.8)
-end
+figh = plot_snr_channels(ynew,y,fc,fs,g_gam,DS,fCutLP,ordLP,rho);
 
-scale = max([spec_y;spec_ynew]);
+figh = plot_snr_channels_voc(ynew,yvoc2,y,fs);
 
-freq = linspace(0,fs/2,floor(T/2));
-plot(freq,spec_y(1:floor(T/2))/scale,'-k')
-plot(freq,spec_ynew(1:floor(T/2))/scale,'-r')
-plot(freq,spec_disc(1:floor(T/2))/scale)
-ylabel('spectrum')
-xlabel('frequency')
+figh = plot_compare_spec(ynew,y,fs,g_gam,DS);
 
+figh = plot_disc(ynew,y,fs);
 
-
-
-figure
-hold on
-plot(y,'-','color',[1,1,1]*0.7); 
-plot(y-ynew,'-k');
-legend('signal','discrepancy')
-xlabel('time /samples')
-ylabel('signals')
-
-
-figure
-hold on
-plot(y,'-k')
-plot(ynew,'-r')
-xlabel('time /samples')
-ylabel('signals')
-legend('original','optimised')
+figh = plot_compare_sigs(ynew,y,fs);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds

@@ -25,10 +25,11 @@ T=length(y);
 %channels_per_erb = 0.2; D=ceil(freqtoerb(fs/2)*channels_per_erb); %fc=erbspace(50,fs/2-1000,D);
 
 %D = 20;   fc=erbspace(200,5500,D); bet = 1;
-D = 10;   fc=erbspace(200,5500,D); bet = 1;
+%D = 10;   fc=erbspace(200,5500,D); bet = 1;
 %D = 3;   fc=erbspace(200,5500,D); bet = 3;
 %D = 4;   fc=erbspace(200,5500,D); bet = 2;
-%D = 5;   fc=erbspace(200,5500,D); bet = 2;
+%D = 5;   fc=erbspace(100,5500,D); bet = 2;
+D = 3;   fc=erbspace(100,5500,D); bet = 3;
 
 %D = 3; fc = [100,500,4000]; bet = 3;
 %D = 2; fc = [200,800]; bet = 5;
@@ -64,7 +65,7 @@ YHWTar = invert_LPF(ATar,rho,fCutLP,ordLP,max_gain);
 % optimise new signal
 
 yInit = randn(T,1)*0;
-numIts = ones(10,1)*80;
+numIts = ones(10,1)*20;
 %numIts = ones(40,1)*40;
 
 [ynew,info] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numIts,y,fCutLP,ordLP,ATar);
@@ -166,59 +167,15 @@ objynoi = mean((y-randn(T,1)).^2);
 %plot(length(info.err_y),objyvoc,'ok')
 %plot(length(info.err_y),objynoi,'or')
 
-% K = 20;
-% figure
-% subplot(2,1,1)
-% tol = 1e-5;
-% ATarPlot = ATar;
-% ATarPlot(ATar<tol) = tol;
-% surf(log(ATarPlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
+figh = plot_snr_channels(ynew,y,fc,fs,g_gam,DS,fCutLP,ordLP,rho);
 
-% subplot(2,1,2)
-% APlot = A;
-% APlot(A<tol) = tol;
-% surf(log(APlot(1:K:end,:))','edgecolor','none')
-% view(0,90)
-% set(gca,'xlim',[1,T/K],'ylim',[1,D])
+figh = plot_snr_channels_voc(ynew,yvoc2,y,fs);
 
-figure
-hold on
-plot(snr_A)
-xlabel('channel number')
-ylabel('SNR envelopes')
+figh = plot_compare_spec(ynew,y,fs,g_gam,DS);
 
-figure
-hold on
-disc = y - ynew;
-spec_disc = abs(fft(disc));
-spec_y = abs(fft(y));
-spec_ynew = abs(fft(ynew));
+figh = plot_disc(ynew,y,fs);
 
-freq = linspace(0,fs/2,floor(T/2));
-plot(freq,spec_y(1:floor(T/2)),'-k')
-plot(freq,spec_ynew(1:floor(T/2)),'-r')
-plot(freq,spec_disc(1:floor(T/2)))
-ylabel('spectrum')
-xlabel('frequency')
-
-figure
-hold on
-plot(y,'-','color',[1,1,1]*0.7); 
-plot(y-ynew,'-k');
-legend('signal','discrepancy')
-xlabel('time /samples')
-ylabel('signals')
-
-
-figure
-hold on
-plot(y,'-k')
-plot(ynew,'-r')
-xlabel('time /samples')
-ylabel('signals')
-legend('original','optimised')
+figh = plot_compare_sigs(ynew,y,fs);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds
