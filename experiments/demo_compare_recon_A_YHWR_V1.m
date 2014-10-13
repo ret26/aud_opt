@@ -64,14 +64,15 @@ YHWTar = invert_LPF(ATar,rho,fCutLP,ordLP,max_gain);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % optimise new signal
 
-yInit = 0*randn(T,1)/100;
+yInit = randn(T,1)/100;
 numIts = ones(10,1)*80;
 %numIts = ones(40,1)*40;
 
 [y1,info1] = match_envelopes_V1(yInit,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y);
 
-numItsInit =  ones(10,1)*40;
-[y2Init,infoInit2] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numItsInit,y);
+%numItsInit =  ones(10,1)*20;
+numItsInit =  ones(10,1)*160;
+[y2Init,infoInit2] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numItsInit,y,fCutLP,ordLP,ATar);
 [y2,info2] = match_envelopes_V1(y2Init,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y);
 
 [A1,YHW1,Y1] = aud_mod_V1(y1,g_gam,DS,fCutLP,ordLP,rho);
@@ -107,13 +108,13 @@ subplot(2,2,2)
 hold on
 plot(info1.err_y)
 ylabel('error y, 1 stage')
-set(gca,'yscale','log')
 
 subplot(2,2,3)
 hold on
 ylabel('objective, 2 stage')
 plot(info2.obj)
 %set(gca,'yscale','log')
+set(gca,'yscale','log')
 
 subplot(2,2,4)
 hold on
