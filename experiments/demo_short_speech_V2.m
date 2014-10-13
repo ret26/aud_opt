@@ -25,10 +25,10 @@ T=length(y);
 %channels_per_erb = 0.2; D=ceil(freqtoerb(fs/2)*channels_per_erb); %fc=erbspace(50,fs/2-1000,D);
 
 %D = 20;   fc=erbspace(200,5500,D); bet = 1;
-D = 10;   fc=erbspace(200,5500,D); bet = 1;
+%D = 10;   fc=erbspace(200,5500,D); bet = 1;
 %D = 3;   fc=erbspace(200,5500,D); bet = 3;
 %D = 4;   fc=erbspace(200,5500,D); bet = 2;
-%D = 5;   fc=erbspace(200,5500,D); bet = 2;
+D = 5;   fc=erbspace(100,5500,D); bet = 2;
 
 %D = 3; fc = [100,500,4000]; bet = 3;
 %D = 2; fc = [200,800]; bet = 5;
@@ -64,7 +64,7 @@ YHWTar = invert_LPF(ATar,rho,fCutLP,ordLP,max_gain);
 % optimise new signal
 
 yInit = randn(T,1)*0;
-numIts = ones(10,1)*80;
+numIts = ones(40,1)*160;
 %numIts = ones(40,1)*40;
 
 [ynew,info] = match_HWR_filt_V1(yInit,YHWTar,g_gam,DS,rho,numIts,y);
