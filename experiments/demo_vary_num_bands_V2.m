@@ -26,8 +26,8 @@ T=length(y);
 
 DS=1; % downsampling (optional)
 
-Ds = [2,3,4,5,6,10,20];
-bet = [3,3,2.5,2.5,2,1,1];
+Ds = [1,2,3,4,5,6,10,20];
+bet = [4,3,3,2.5,2.5,2,1,1];
 
 %fmin = 100;
 %fmax = 6000;
@@ -98,6 +98,11 @@ for m=1:M
    [ynew,info] = match_envelopes_V1(ynew,ATar,g_gam,DS,fCutLP,ordLP,rho,numIts,y);
    
     Ys(:,l,m) = ynew;
+    
+    objs_Init{l,m} = infoInit.obj;
+    objs_A_Init{l,m} = infoInit.obj_A;
+    err_ys_Init{l,m} = infoInit.err_y;
+    
     objs{l,m} = info.obj;
     err_ys(:,l,m) = info.err_y;
     
@@ -148,3 +153,5 @@ legend('test error','training error')
 figure
 hold on
 plot(Ds,snr_y,'-k')
+
+figure
