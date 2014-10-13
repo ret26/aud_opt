@@ -183,42 +183,15 @@ objynoi = mean((y-randn(T,1)).^2);
 % view(0,90)
 % set(gca,'xlim',[1,T/K],'ylim',[1,D])
 
-figure
-hold on
-plot(snr_A)
-xlabel('channel number')
-ylabel('SNR envelopes')
+figh = plot_snr_channels(ynew,y,fc,fs,g_gam,DS,fCutLP,ordLP,rho);
 
-figure
-hold on
-disc = y - ynew;
-spec_disc = abs(fft(disc));
-spec_y = abs(fft(y));
-spec_ynew = abs(fft(ynew));
+figh = plot_snr_channels_voc(ynew,yvoc2,y,fs);
 
-freq = linspace(0,fs/2,floor(T/2));
-plot(freq,spec_y(1:floor(T/2)),'-k')
-plot(freq,spec_ynew(1:floor(T/2)),'-r')
-plot(freq,spec_disc(1:floor(T/2)))
-ylabel('spectrum')
-xlabel('frequency')
+figh = plot_compare_spec(ynew,y,fs,g_gam,DS);
 
-figure
-hold on
-plot(y,'-','color',[1,1,1]*0.7); 
-plot(y-ynew,'-k');
-legend('signal','discrepancy')
-xlabel('time /samples')
-ylabel('signals')
+figh = plot_disc(ynew,y,fs);
 
-
-figure
-hold on
-plot(y,'-k')
-plot(ynew,'-r')
-xlabel('time /samples')
-ylabel('signals')
-legend('original','optimised')
+figh = plot_compare_sigs(ynew,y,fs);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % save sounds
